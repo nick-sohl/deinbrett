@@ -2,9 +2,9 @@
   "name": "deinbrett",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "css:dev": "tailwindcss -i ./resources/css/app.css -o ./public/css/app.css --watch",
+    "css:build": "tailwindcss -i ./resources/css/app.css -o ./public/css/app.css --minify"
   },
   "repository": {
     "type": "git",
@@ -12,5 +12,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "tailwindcss": "^4.0.0"
+  }
 }

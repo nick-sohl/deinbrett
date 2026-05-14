@@ -1,6 +1,7 @@
 
 /vendor/
 /node_modules/
+/public/css/
 
 .env
 db/*.sqlite
