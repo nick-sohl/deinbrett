@@ -1,3 +1,11 @@
-// check Htmx Header of request
-// if Htmx only render partial of site
-// if not render whole page with base layout
+<?php
+
+namespace DeinBrett\Presentation\Helper;
+
+class Htmx
+{
+    public static function isHtmx(): bool
+    {
+        return isset($_SERVER['HTTP_HX_REQUEST']) && $_SERVER['HTTP_HX_REQUEST'] === 'true';
+    }
+}
