@@ -18,7 +18,6 @@ class Database
 
     // SQLITE
     private const string SCHEMA_FILE_PATH = self::BASE_PATH . "/schema.sql";
-    private const string SEEDER_FILE_PATH = self::BASE_PATH . "/seed.sql";
 
     // Prevent cloning and unserialization
     private function __clone() {}
@@ -46,20 +45,20 @@ class Database
     // seed database
     private function seed(): void
     {
-        if (!file_exists(self::SEEDER_FILE_PATH)) {
+        $this->seedTable('boards', self::BASE_PATH . '/seed_boards.sql');
+    }
+
+    private function seedTable(string $table, string $file): void
+    {
+        if (!file_exists($file)) {
             return;
         }
-
-        // check if DB is already seeded -> if yes don't seed
-        $count = (int) $this->pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
+        $count = (int) $this->pdo->query("SELECT COUNT(*) FROM {$table}")->fetchColumn();
         if ($count > 0) {
             return;
         }
-
         $this->pdo->beginTransaction();
-        // execute SQL from schema.sql
-        $this->pdo->exec(file_get_contents(self::SEEDER_FILE_PATH));
-        // commit the transaction
+        $this->pdo->exec(file_get_contents($file));
         $this->pdo->commit();
     }
 
