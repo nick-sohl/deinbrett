@@ -11,6 +11,11 @@ class Router
         $this->routes[] = ['method' => 'GET', 'path' => $path, 'controller' => $controller];
     }
 
+    public function post(string $path, callable $controller): void
+    {
+        $this->routes[] = ['method' => 'POST', 'path' => $path, 'controller' => $controller];
+    }
+
     public function dispatch(string $method, string $path): void
     {
         $path = parse_url($path, PHP_URL_PATH);
