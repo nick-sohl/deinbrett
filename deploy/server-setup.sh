@@ -1,23 +1,22 @@
 #!/bin/bash
 # First-time setup on Infomaniak shared hosting.
-# Run once via SSH: ssh <user>@<host> then paste this script.
-# The document root must be set to /sites/deinbrett.ch/public in the
-# Infomaniak control panel before running this.
+# Run once via SSH after uploading this script or downloading it.
 
 set -e
 
-APP_DIR="/sites/deinbrett.ch"
-REPO="git@github.com:nick-sohl/deinbrett.git"
+APP_DIR="/home/clients/5587997f74a0eeff8f0c921f1e7a7b40/sites/deinbrett.ch"
+REPO="https://github.com/nick-sohl/deinbrett.git"
 
 echo "==> Cloning repository"
-# If the directory already has files from Infomaniak, initialise git inside it
 cd "$APP_DIR"
 if [ ! -d ".git" ]; then
     git init
+    git config pull.ff only
     git remote add origin "$REPO"
     git fetch origin main
     git checkout -b main --track origin/main
 else
+    git config pull.ff only
     git pull origin main
 fi
 
@@ -28,7 +27,7 @@ echo "==> Creating .env"
 if [ ! -f ".env" ]; then
     cp .env.example .env
     echo ""
-    echo "  .env created. Edit it now with your production values:"
+    echo "  .env created. Edit it now:"
     echo "  nano $APP_DIR/.env"
 fi
 
@@ -41,8 +40,6 @@ echo ""
 echo "Setup complete."
 echo ""
 echo "Next steps:"
-echo "  1. Edit .env:               nano $APP_DIR/.env"
-echo "  2. Generate deploy SSH key: ssh-keygen -t ed25519 -f ~/.ssh/deploy_key -N ''"
-echo "  3. Add deploy public key to GitHub repo → Settings → Deploy keys"
-echo "  4. Add GitHub Actions secrets (see README)"
-echo "  5. Visit https://deinbrett.ch to verify"
+echo "  1. Edit .env:  nano $APP_DIR/.env"
+echo "  2. Visit the preview URL to verify the site loads"
+echo "  3. Set up the deploy pipeline (see deploy/deploy.sh)"
