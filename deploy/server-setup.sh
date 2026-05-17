@@ -1,80 +1,48 @@
 #!/bin/bash
-# One-time server setup: switches from Apache to nginx, installs dependencies,
-# clones the repo and wires everything up for deinbrett.ch
-# Run as root on a fresh Infomaniak VPS.
+# First-time setup on Infomaniak shared hosting.
+# Run once via SSH: ssh <user>@<host> then paste this script.
+# The document root must be set to /sites/deinbrett.ch/public in the
+# Infomaniak control panel before running this.
 
 set -e
 
-APP_DIR="/var/www/deinbrett"
-APP_USER="www-data"
-REPO="https://github.com/nick-sohl/deinbrett.git"
-DOMAIN="deinbrett.ch"
-PHP="php8.5"
-
-echo "==> Updating packages"
-apt-get update -q
-
-echo "==> Stopping and disabling Apache"
-systemctl stop apache2   2>/dev/null || true
-systemctl disable apache2 2>/dev/null || true
-
-echo "==> Installing nginx, PHP-FPM, Composer deps"
-apt-get install -y -q \
-    nginx \
-    ${PHP}-fpm \
-    ${PHP}-sqlite3 \
-    ${PHP}-mbstring \
-    ${PHP}-xml \
-    ${PHP}-curl \
-    ${PHP}-zip \
-    composer \
-    certbot \
-    python3-certbot-nginx \
-    git \
-    unzip
+APP_DIR="/sites/deinbrett.ch"
+REPO="git@github.com:nick-sohl/deinbrett.git"
 
 echo "==> Cloning repository"
-mkdir -p "$APP_DIR"
-git clone "$REPO" "$APP_DIR"
+# If the directory already has files from Infomaniak, initialise git inside it
+cd "$APP_DIR"
+if [ ! -d ".git" ]; then
+    git init
+    git remote add origin "$REPO"
+    git fetch origin main
+    git checkout -b main --track origin/main
+else
+    git pull origin main
+fi
 
 echo "==> Installing Composer dependencies"
-cd "$APP_DIR"
 composer install --no-dev --optimize-autoloader
 
 echo "==> Creating .env"
-cp .env.example .env
-sed -i "s/APP_ENV=.*/APP_ENV=production/" .env
-sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" .env
+if [ ! -f ".env" ]; then
+    cp .env.example .env
+    echo ""
+    echo "  .env created. Edit it now with your production values:"
+    echo "  nano $APP_DIR/.env"
+fi
 
-echo "==> Setting permissions"
-# App files owned by root, readable by www-data
-chown -R root:${APP_USER} "$APP_DIR"
-chmod -R 750 "$APP_DIR"
-# db/ directory must be writable by www-data so SQLite can create/update the file
-chown -R ${APP_USER}:${APP_USER} "$APP_DIR/db"
-chmod -R 770 "$APP_DIR/db"
-# public/ readable
-chmod -R 755 "$APP_DIR/public"
-
-echo "==> Configuring nginx"
-cp "$APP_DIR/deploy/nginx.conf" /etc/nginx/sites-available/deinbrett
-ln -sf /etc/nginx/sites-available/deinbrett /etc/nginx/sites-enabled/deinbrett
-rm -f /etc/nginx/sites-enabled/default
-
-echo "==> Testing nginx config"
-nginx -t
-
-echo "==> Obtaining SSL certificate"
-# Temporarily serve on HTTP so certbot can verify the domain
-# Remove the HTTPS block from nginx.conf for initial cert request
-certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos --email "nick.sohl@novu.ch" --redirect
-
-echo "==> Reloading nginx"
-systemctl reload nginx
-systemctl enable nginx
+echo "==> Setting db/ directory permissions"
+chmod 770 "$APP_DIR/db"
+touch "$APP_DIR/db/deinbrett.sqlite" 2>/dev/null || true
+chmod 660 "$APP_DIR/db/deinbrett.sqlite"
 
 echo ""
-echo "Setup complete. deinbrett.ch is live."
-echo "Add this deploy public key to GitHub secrets:"
+echo "Setup complete."
 echo ""
-cat /root/.ssh/id_ed25519.pub 2>/dev/null || echo "(no SSH key found at /root/.ssh/id_ed25519.pub)"
+echo "Next steps:"
+echo "  1. Edit .env:               nano $APP_DIR/.env"
+echo "  2. Generate deploy SSH key: ssh-keygen -t ed25519 -f ~/.ssh/deploy_key -N ''"
+echo "  3. Add deploy public key to GitHub repo → Settings → Deploy keys"
+echo "  4. Add GitHub Actions secrets (see README)"
+echo "  5. Visit https://deinbrett.ch to verify"

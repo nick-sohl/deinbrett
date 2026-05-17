@@ -16,5 +16,5 @@ jobs:
           host:     ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key:      ${{ secrets.SSH_PRIVATE_KEY }}
-          port:     ${{ secrets.SSH_PORT || 22 }}
-          script:   bash /var/www/deinbrett/deploy/deploy.sh
+          port:     ${{ secrets.SSH_PORT }}
+          script:   bash /sites/deinbrett.ch/deploy/deploy.sh
