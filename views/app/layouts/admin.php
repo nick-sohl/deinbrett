@@ -39,12 +39,12 @@ $nav = [
       <a href="/admin" class="block text-lg font-semibold tracking-tight">DeinBrett CMS</a>
     </div>
     <nav class="flex-1 py-4">
-      <?php foreach ($nav as $key => $item):
-        $isActive = ($activeNav === $key);
+      <?php foreach ($nav as $navKey => $navItem):
+        $isActive = ($activeNav === $navKey);
       ?>
-        <a href="<?= $item['url'] ?>"
+        <a href="<?= $navItem['url'] ?>"
            class="block px-5 py-2 text-sm hover:bg-neutral-800 <?= $isActive ? 'bg-neutral-800 text-white' : 'text-neutral-300' ?>">
-          <?= htmlspecialchars($item['label']) ?>
+          <?= htmlspecialchars($navItem['label']) ?>
         </a>
       <?php endforeach; ?>
     </nav>

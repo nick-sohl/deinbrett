@@ -3,7 +3,8 @@
 /** @var array $old */
 /** @var array $errors */
 $isEdit = $item !== null;
-$val = fn(string $k, $d = '') => htmlspecialchars((string) ($old[$k] ?? ($item[$k] ?? $d)));
+$item   = $item ?? [];
+$val    = fn(string $k, $d = '') => htmlspecialchars((string) ($old[$k] ?? ($item[$k] ?? $d)));
 $action = $isEdit ? '/admin/options/woods/' . (int)$item['id'] . '/update' : '/admin/options/woods';
 ?>
 <div class="max-w-2xl">

@@ -1,7 +1,8 @@
 <?php
 /** @var ?array $item */ /** @var array $old */ /** @var array $errors */
 $isEdit = $item !== null;
-$val = fn(string $k, $d = '') => htmlspecialchars((string) ($old[$k] ?? ($item[$k] ?? $d)));
+$item   = $item ?? [];
+$val    = fn(string $k, $d = '') => htmlspecialchars((string) ($old[$k] ?? ($item[$k] ?? $d)));
 $action = $isEdit ? '/admin/options/extras/' . (int)$item['id'] . '/update' : '/admin/options/extras';
 ?>
 <div class="max-w-2xl">
