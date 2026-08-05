@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin – DeinBrett</title>
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="<?= asset('/css/app.css') ?>">
 </head>
 <body class="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
   <div class="w-full max-w-sm bg-white shadow-md rounded-lg p-8">
