@@ -4,3 +4,14 @@
 
 .env
 db/*.sqlite
+
+# Uploads: keep folder structure, ignore user content
+/public/uploads/*
+!/public/uploads/.gitkeep
+!/public/uploads/products/
+/public/uploads/products/*
+!/public/uploads/products/.gitkeep
+
+# Logs
+/storage/logs/*
+!/storage/logs/.gitkeep

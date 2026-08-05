@@ -16,6 +16,7 @@ class Board
     public float  $price        = 0.0;
     public int    $stock        = 0;
     public int    $featured     = 0;
+    public string $image_path   = '';
     public string $created_at   = '';
 
     public function extrasArray(): array
