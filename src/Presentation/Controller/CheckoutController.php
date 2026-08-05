@@ -3,6 +3,7 @@
 namespace DeinBrett\Presentation\Controller;
 
 use DeinBrett\Application\Service\CartService;
+use DeinBrett\Application\Service\OrderMailer;
 use DeinBrett\Application\Service\OrderService;
 use DeinBrett\Presentation\Helper\Csrf;
 use DeinBrett\Presentation\View\View;
@@ -12,6 +13,7 @@ class CheckoutController
     public function __construct(
         private CartService  $cart,
         private OrderService $orderService,
+        private OrderMailer  $mailer,
     ) {}
 
     public function index(): void
@@ -84,6 +86,8 @@ class CheckoutController
         $order = $this->orderService->create($data, $this->cart->items());
         $_SESSION['pending_order'] = $order->reference;
 
+        $this->mailer->sendNewOrderNotification($order);
+
         header('Location: /checkout/twint');
         exit;
     }
@@ -128,7 +132,7 @@ class CheckoutController
         }
 
         $this->cart->clear();
-        $this->sendConfirmationEmails($order);
+        $this->mailer->sendStatusUpdate($order, 'pending');
 
         session_regenerate_id(true);
         $_SESSION['confirmed_order'] = $reference;
@@ -162,54 +166,5 @@ class CheckoutController
             'showHero' => false,
         ]);
         $view->renderFull();
-    }
-
-    private function sendConfirmationEmails(\DeinBrett\Domain\Entity\Order $order): void
-    {
-        $shopEmail = 'info@deinbrett.ch';
-        $headers   = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n";
-        $clean     = fn(string $s): string => str_replace(["\r", "\n"], '', $s);
-
-        // Email to customer
-        $subject = $clean("Deine Bestellung bei DeinBrett – {$order->reference}");
-        $body    = $this->buildCustomerEmail($order);
-        mail($clean($order->email), $subject, $body, $headers . "From: {$shopEmail}\r\nReply-To: {$shopEmail}");
-
-        // Email to shop
-        $shopSubject = $clean("Neue Bestellung {$order->reference} – {$order->fullName()}");
-        $shopBody    = $this->buildShopEmail($order);
-        mail($shopEmail, $shopSubject, $shopBody, $headers . "From: {$shopEmail}");
-    }
-
-    private function buildCustomerEmail(\DeinBrett\Domain\Entity\Order $order): string
-    {
-        $name  = htmlspecialchars($order->fullName());
-        $ref   = htmlspecialchars($order->reference);
-        $total = number_format($order->total, 2, '.', "'");
-        return <<<HTML
-        <p>Hallo {$name},</p>
-        <p>vielen Dank für deine Bestellung bei DeinBrett. Wir haben sie erhalten und melden uns innerhalb von 24 Stunden.</p>
-        <p><strong>Bestellreferenz:</strong> {$ref}<br>
-        <strong>Betrag:</strong> CHF {$total}</p>
-        <p>Lieferzeit: 4–6 Wochen · Handgefertigt in der Schweiz</p>
-        <p>Bei Fragen antworte einfach auf diese E-Mail.<br>Dein DeinBrett-Team</p>
-        HTML;
-    }
-
-    private function buildShopEmail(\DeinBrett\Domain\Entity\Order $order): string
-    {
-        $name  = htmlspecialchars($order->fullName());
-        $email = htmlspecialchars($order->email);
-        $ref   = htmlspecialchars($order->reference);
-        $total = number_format($order->total, 2, '.', "'");
-        $addr  = htmlspecialchars("{$order->address}, {$order->zip} {$order->city}");
-        return <<<HTML
-        <p><strong>Neue Bestellung eingegangen!</strong></p>
-        <p>Referenz: {$ref}<br>
-        Kunde: {$name} ({$email})<br>
-        Lieferadresse: {$addr}<br>
-        Betrag: CHF {$total}<br>
-        Zahlung: TWINT ✓</p>
-        HTML;
     }
 }

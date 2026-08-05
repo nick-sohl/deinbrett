@@ -49,14 +49,19 @@ $extrasData = BoardData::extras();
       ?>
       <article class="card flex flex-col group" data-anim>
 
-        <!-- Image placeholder -->
+        <!-- Image / placeholder -->
         <div class="relative overflow-hidden flex-none" style="aspect-ratio: 4/3; background: <?= $wood['bg'] ?>">
-          <div class="absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-[1.04]">
-            <svg class="w-16 h-16" style="color: <?= $wood['text'] ?>" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect width="20" height="14" x="2" y="5" rx="2"/>
-              <path d="M6 5v14"/><path d="M18 5v14"/><path d="M2 12h20"/>
-            </svg>
-          </div>
+          <?php if (!empty($board->image_path)): ?>
+            <img src="<?= htmlspecialchars($board->image_path) ?>" alt="<?= htmlspecialchars($board->name) ?>"
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]">
+          <?php else: ?>
+            <div class="absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-[1.04]">
+              <svg class="w-16 h-16" style="color: <?= $wood['text'] ?>" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect width="20" height="14" x="2" y="5" rx="2"/>
+                <path d="M6 5v14"/><path d="M18 5v14"/><path d="M2 12h20"/>
+              </svg>
+            </div>
+          <?php endif; ?>
           <!-- Badges -->
           <div class="absolute top-3 left-3 flex gap-2 flex-wrap">
             <?php if ($board->featured): ?>
